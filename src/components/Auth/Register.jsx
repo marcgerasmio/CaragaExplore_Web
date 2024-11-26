@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import supabase from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [passwordType, setPasswordType] = useState("password");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [province, setProvince] = useState("");
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setPasswordType((prevType) =>
@@ -15,18 +18,26 @@ const Register = () => {
     );
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
-      } else {
-        alert("Registration successful!");
-      }
-    }, 2000);
+    const { data, error } = await supabase
+    .from('Local')
+    .insert([
+      {
+      name,
+      email,
+      password,
+      },
+    ])
+  if (error) {
+    console.error('Error inserting data:', error);
+    alert('Error inserting data');
+  } else {
+    console.log('Data inserted successfully:', data);
+    setIsLoading(false);
+    navigate("/");
+  }
   };
 
   return (
@@ -38,8 +49,8 @@ const Register = () => {
             <input
               type="text"
               className="input input-bordered w-full mt-2"
-              value={province}
-              onChange={(e) => setProvince(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Enter your province"
               required
             />
@@ -66,18 +77,6 @@ const Register = () => {
               required
             />
           </label>
-
-          <label className="flex flex-col">
-            <input
-              type={passwordType}
-              className="input input-bordered w-full mt-2"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-              required
-            />
-          </label>
-
           <div className="flex items-center gap-2 mt-4">
             <input
               type="checkbox"

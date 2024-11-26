@@ -1,18 +1,83 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
+import supabase from "../supabaseClient"; 
+import { NavLink } from "react-router-dom";
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingSpots, setPendingSpots] = useState([]);
+  const [approvedSpots, setApprovedSpots] = useState([]);
+  const [selectedImage, setSelectedImage] = useState('');
 
-  // Open Modal
-  const handleViewClick = () => {
+
+  const handleViewClick = (spot) => {
+    setSelectedImage(spot.image_link)
     setIsModalOpen(true);
   };
 
-  // Close Modal
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
+  // Fetch spots data from Supabase
+  const fetchSpots = async () => {
+    try {
+      // Fetching spots with status Pending or Approved
+      const { data, error } = await supabase
+        .from('Spots')
+        .select('*')
+        .in('status', ['Pending', 'Approved']); // Filter by Pending or Approved status
+
+      if (error) {
+        throw error;
+      }
+      const pending = data.filter(spot => spot.status === 'Pending');
+      const approved = data.filter(spot => spot.status === 'Approved');
+
+      setPendingSpots(pending);
+      setApprovedSpots(approved);
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    }
+  };
+
+  const accept = async (spot) => {
+    try {
+      const { error } = await supabase
+        .from("Spots")
+        .update({
+        status : 'Approved'
+        })
+        .eq("id", spot.id);
+      if (error) throw error;
+window.location.reload();
+    } catch (error) {
+      alert("Error updating data.");
+      console.error("Error during update:", error.message);
+    }
+  };
+
+  const reject = async (spot) => {
+    try {
+      const { error } = await supabase
+        .from("Spots")
+        .update({
+        status : 'Rejected'
+        })
+        .eq("id", spot.id);
+      if (error) throw error;
+window.location.reload();
+    } catch (error) {
+      alert("Error updating data.");
+      console.error("Error during update:", error.message);
+    }
+  };
+
+  // Fetch spots on component mount
+  useEffect(() => {
+    fetchSpots();
+  }, []);
 
   return (
     <>
@@ -24,12 +89,14 @@ const Dashboard = () => {
                 DOT Dashboard
               </h1>
               <div className="flex gap-3">
+                <NavLink to="/">
                 <button
                   className="btn btn-circle btn-ghost"
                   aria-label="Sign Out"
                 >
                   <FaSignOutAlt size={22} />
                 </button>
+                </NavLink>
               </div>
             </div>
 
@@ -56,30 +123,46 @@ const Dashboard = () => {
                           <th>Spot Name</th>
                           <th>Address</th>
                           <th>Spot Category</th>
-                          <th>Remarks</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <th>1</th>
-                          <td>Tinuy-an Falls</td>
-                          <td>Barobo, Surigao Del Sur</td>
-                          <td>Falls</td>
-                          <td>
-                            <button className="btn btn-outline btn-warning btn-sm">
-                              Pending
-                            </button>
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-primary btn-sm text-white"
-                              onClick={handleViewClick}
-                            >
-                              View
-                            </button>
-                          </td>
-                        </tr>
+                        {pendingSpots.length > 0 ? (
+                          pendingSpots.map((spot, index) => (
+                            <tr key={spot.id}>
+                              <th>{index + 1}</th>
+                              <td>{spot.spot_name}</td>
+                              <td>{spot.spot_location}</td>
+                              <td>{spot.spot_type}</td>
+                              <td>
+                              <div className="flex space-x-2">
+                              <button
+                                className="btn btn-primary btn-sm text-white"
+                                onClick={() => handleViewClick(spot)}
+                              >
+                               View
+                              </button>
+                              <button
+                                className="btn btn-success btn-sm text-white"
+                                onClick={() => accept(spot)}
+                              >
+                                Accept
+                              </button>
+                              <button
+                                className="btn btn-error btn-sm text-white"
+                                onClick={() => reject(spot)}
+                              >
+                                Reject
+                              </button>
+                            </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6">No Pending Spots</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -106,30 +189,32 @@ const Dashboard = () => {
                         <th>Spot Name</th>
                         <th>Address</th>
                         <th>Spot Category</th>
-                        <th>Remarks</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <th>1</th>
-                        <td>Tinuy-an Falls</td>
-                        <td>Barobo, Surigao Del Sur</td>
-                        <td>Falls</td>
-                        <td>
-                          <button className="btn btn-outline btn-success btn-sm">
-                            Approved
-                          </button>
-                        </td>
-                        <td>
-                          <button
-                            className="btn btn-primary btn-sm text-white"
-                            onClick={handleViewClick}
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
+                      {approvedSpots.length > 0 ? (
+                        approvedSpots.map((spot, index) => (
+                          <tr key={spot.id}>
+                            <th>{index + 1}</th>
+                            <td>{spot.spot_name}</td>
+                              <td>{spot.spot_location}</td>
+                              <td>{spot.spot_type}</td>
+                            <td>
+                              <button
+                                className="btn btn-primary btn-sm text-white"
+                                onClick={() => handleViewClick(spot)}
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6">No Approved Spots</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -145,8 +230,8 @@ const Dashboard = () => {
           <div className="modal-box">
             <h3 className="font-bold text-lg">Spot Image</h3>
             <img
-              src="https://placehold.co/600x400"
-              alt="Tinuy-an Falls"
+              src={selectedImage}
+              alt="Spot Image"
               className="w-full h-auto rounded-lg my-4"
             />
             <div className="modal-action">

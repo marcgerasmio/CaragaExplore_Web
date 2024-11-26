@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import supabase from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const [role, setRole] = useState('Local');
   const [passwordType, setPasswordType] = useState("password");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setPasswordType((prevType) =>
@@ -12,15 +17,33 @@ const Login = () => {
     );
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setIsLoading(true);
+    const { data } = await supabase
+    .from(role)
+    .select('*')
+    .eq('email', email)
+    .single();
 
-    // Simulate an async action (e.g., API call)
-    setTimeout(() => {
+    if (data && data.password === password && data.email === email) {
+      const id = data.id;
+      sessionStorage.setItem('id', id);
+      const name = data.name;
+      sessionStorage.setItem('name', name);
+      
+
+      if (role === 'Admin') {
+        navigate("/dashboard"); 
+      } else {
+        navigate("/ltdashboard"); 
+      }
+    }
+    
+    else {
+      alert('Wrong Credentials');
       setIsLoading(false);
-      alert("Login successful!");
-    }, 2000);
+    }
   };
 
   return (
@@ -44,6 +67,8 @@ const Login = () => {
                 className="grow"
                 placeholder="Email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </label>
@@ -72,9 +97,11 @@ const Login = () => {
               />
             </div>
 
-            <select className="select select-bordered w-full mt-2">
-              <option>Local Tourism</option>
-              <option>DOT</option>
+            <select className="select select-bordered w-full mt-2"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}>
+              <option value="Local">Local Tourism</option>
+              <option value="Admin">DOT</option>
             </select>
 
             <div className="flex items-center gap-2 mt-3 mb-4">

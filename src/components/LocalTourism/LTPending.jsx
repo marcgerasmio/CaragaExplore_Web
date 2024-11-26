@@ -1,16 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
+import supabase from "../supabaseClient.jsx";
 
 const LTPending = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [data, setData] = useState([]);
+  const [selectedSpot, setSelectedSpot] = useState(null);
+  const id = sessionStorage.getItem("id");
 
-  const handleViewClick = () => {
+  const fetch_data = async () => {
+    try {
+      const { error, data } = await supabase
+        .from('Spots')
+        .select('*')
+        .eq('status', 'Pending')
+        .eq('local_id', id);
+
+      if (error) throw error;
+      setData(data);
+    } catch (error) {
+      alert("An unexpected error occurred.");
+      console.error('Error during fetching history:', error.message);
+    }
+  };
+
+  const handleViewClick = (spot) => {
+    setSelectedSpot(spot);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
+  useEffect(() => {
+    fetch_data();
+  }, []);
 
   return (
     <>
@@ -23,24 +48,24 @@ const LTPending = () => {
           </header>
 
           <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-            <div className="overflow-x-auto">
-              <table className="table w-full">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Spot Name</th>
-                    <th>Address</th>
-                    <th>Spot Category</th>
-                    <th>Remarks</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th>1</th>
-                    <td>Tinuy-an Falls</td>
-                    <td>Barobo, Surigao Del Sur</td>
-                    <td>Falls</td>
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Spot Name</th>
+                  <th>Address</th>
+                  <th>Spot Category</th>
+                  <th>Remarks</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((spot, index) => (
+                  <tr key={spot.id}>
+                    <th>{index + 1}</th>
+                    <td>{spot.spot_name}</td>
+                    <td>{spot.spot_location}</td>
+                    <td>{spot.spot_type}</td>
                     <td>
                       <button className="btn btn-outline btn-warning btn-sm">
                         Pending
@@ -49,26 +74,26 @@ const LTPending = () => {
                     <td>
                       <button
                         className="btn btn-primary btn-sm text-white"
-                        onClick={handleViewClick}
+                        onClick={() => handleViewClick(spot)}
                       >
                         View
                       </button>
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && selectedSpot && (
         <div className="modal modal-open font-mono">
           <div className="modal-box">
-            <h3 className="font-bold text-lg">Spot Image</h3>
+            <h3 className="font-bold text-lg">{selectedSpot.spot_name}</h3>
             <img
-              src="https://placehold.co/600x400"
-              alt="Tinuy-an Falls"
+              src={selectedSpot.image_link}
+              alt={selectedSpot.touristSpotName}
               className="w-full h-auto rounded-lg my-4"
             />
             <div className="modal-action">

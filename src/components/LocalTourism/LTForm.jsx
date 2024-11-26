@@ -1,52 +1,86 @@
 import Sidebar from "./Sidebar";
 import { useState } from "react";
+import supabase from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const LTForm = () => {
-  const [formData, setFormData] = useState({
-    touristSpotName: "",
-    category: "",
-    location: "",
-    description: "",
-    amenities: [],
-    contact: {
-      email: "",
-      phone: "",
-      socialMedia: "",
-    },
-    operatingHours: {
-      opening: "",
-      closing: "",
-    },
-    photos: [],
-    status: "Draft",
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
+  const local_id = sessionStorage.getItem("id")
+  const [touristSpotName, setTouristSpotName] = useState("");
+  const [category, setCategory] = useState("");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [amenities, setAmenities] = useState([]);
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactSocialMedia, setContactSocialMedia] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const [status, setStatus] = useState("Pending");
+  const [file, setFile] = useState("");
+  const navigate = useNavigate();
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      amenities: checked
-        ? [...prevData.amenities, name]
-        : prevData.amenities.filter((item) => item !== name),
-    }));
+    setAmenities((prevAmenities) =>
+      checked
+        ? [...prevAmenities, name]
+        : prevAmenities.filter((item) => item !== name)
+    );
   };
 
-  const handlePhotoUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prevData) => ({
-      ...prevData,
-      photos: [...prevData.photos, ...files],
-    }));
+
+  const handlePhotoUpload = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      try {
+        const filePath = `${selectedFile.name}`;
+        const { data, error } = await supabase.storage
+          .from("Images")
+          .upload(filePath, selectedFile);
+        if (error) {
+          throw error;
+        }
+        const { data: publicURL, error: urlError } = supabase.storage
+          .from("Images")
+          .getPublicUrl(filePath);
+        if (urlError) {
+          throw urlError;
+        }
+        console.log("Image URL:", publicURL.publicUrl);
+        setPhotos(publicURL.publicUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error uploading image: " + error.message);
+      }
+    }
   };
 
-  const handleSubmit = () => {
-    setFormData((prevData) => ({ ...prevData, status: "Submitted" }));
-    console.log("Form submitted:", formData);
+
+  const handleSubmit = async () => {
+    const { data, error } = await supabase
+    .from('Spots')
+    .insert([
+      {
+      spot_name: touristSpotName,
+      spot_type : category,
+      spot_location : location,
+      description,
+      amenities,
+      contactEmail,
+      contactPhone,
+      contactSocialMedia,
+      image_link : photos,
+      status : 'Pending',
+      local_id,
+      },
+    ])
+  if (error) {
+    console.error('Error inserting data:', error);
+    alert('Error inserting data');
+  } else {
+    console.log('Data inserted successfully:', data);
+    navigate("/ltpending");
+  }
   };
 
   return (
@@ -66,28 +100,29 @@ const LTForm = () => {
             <div className="grid grid-cols-1 gap-4">
               <input
                 type="text"
-                name="touristSpotName"
+                value={touristSpotName}
                 placeholder="Tourist Spot Name"
                 className="input input-bordered w-full"
-                onChange={handleInputChange}
+                onChange={(e) => setTouristSpotName(e.target.value)}
               />
               <select
-                name="category"
+                value={category}
                 className="select select-bordered w-full"
-                onChange={handleInputChange}
+                onChange={(e) => setCategory(e.target.value)}
               >
                 <option value="">Select Category</option>
-                <option value="beach">Beach</option>
-                <option value="park">Park</option>
-                <option value="cultural site">Cultural Site</option>
-                <option value="event">Event</option>
+                <option value="Beaches">Beach</option>
+                <option value="Falls">Falls</option>
+                <option value="Farm">Farm</option>
+                <option value="Resort">Resort</option>
+                <option value="Island">Island</option>
               </select>
               <input
                 type="text"
-                name="location"
+                value={location}
                 placeholder="Location"
                 className="input input-bordered w-full"
-                onChange={handleInputChange}
+                onChange={(e) => setLocation(e.target.value)}
               />
             </div>
           </div>
@@ -106,11 +141,11 @@ const LTForm = () => {
             {/* Description Section */}
             <div className="space-y-4 col-span-full">
               <textarea
-                name="description"
+                value={description}
                 placeholder="Brief Description"
                 className="textarea textarea-bordered w-full"
                 rows="4"
-                onChange={handleInputChange}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
           </div>
@@ -150,42 +185,24 @@ const LTForm = () => {
             <div className="grid grid-cols-1 gap-4">
               <input
                 type="email"
-                name="contactEmail"
+                value={contactEmail}
                 placeholder="Email"
                 className="input input-bordered w-full"
-                onChange={(e) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    contact: { ...prevData.contact, email: e.target.value },
-                  }))
-                }
+                onChange={(e) => setContactEmail(e.target.value)}
               />
               <input
                 type="text"
-                name="contactPhone"
+                value={contactPhone}
                 placeholder="Phone Number"
                 className="input input-bordered w-full"
-                onChange={(e) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    contact: { ...prevData.contact, phone: e.target.value },
-                  }))
-                }
+                onChange={(e) => setContactPhone(e.target.value)}
               />
               <input
                 type="text"
-                name="contactSocialMedia"
+                value={contactSocialMedia}
                 placeholder="Social Media Link"
                 className="input input-bordered w-full"
-                onChange={(e) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    contact: {
-                      ...prevData.contact,
-                      socialMedia: e.target.value,
-                    },
-                  }))
-                }
+                onChange={(e) => setContactSocialMedia(e.target.value)}
               />
             </div>
           </div>
