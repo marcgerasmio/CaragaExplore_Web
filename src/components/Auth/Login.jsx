@@ -47,8 +47,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-200 font-mono">
-      <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-lg">
+    <div className="flex justify-center items-center min-h-screen bg-[url('/bg.jpg')] bg-cover bg-center font-mono">
+      <div className="w-full max-w-md p-8 bg-gray-300 shadow-lg rounded-lg">
         <img src="logo.png" alt="logo" className="w-48 h-48 mx-auto" />
         <form onSubmit={handleSubmit}>
           <label className="flex flex-col">

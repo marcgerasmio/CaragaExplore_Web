@@ -8,7 +8,7 @@ import {
 
 const Sidebar = () => {
   return (
-    <div className="w-64 bg-gray-800 text-white p-6 font-mono">
+    <div className="w-64 bg-sidebarColor text-white p-6 font-mono">
       <div className="mb-8 flex justify-center">
         <img
           src="logo.png"
@@ -26,7 +26,7 @@ const Sidebar = () => {
           to="/ltdashboard"
           className={({ isActive }) =>
             `flex items-center text-lg font-medium transition ${
-              isActive ? "text-blue-400 font-bold" : "hover:text-yellow-400"
+              isActive ? "text-blue-800 font-bold" : "hover:text-black"
             }`
           }
         >
@@ -38,7 +38,7 @@ const Sidebar = () => {
           to="/ltform"
           className={({ isActive }) =>
             `flex items-center text-lg font-medium transition ${
-              isActive ? "text-green-400 font-bold" : "hover:text-yellow-400"
+              isActive ? "text-blue-800 font-bold" : "hover:text-black"
             }`
           }
         >
@@ -50,7 +50,7 @@ const Sidebar = () => {
           to="/ltpending"
           className={({ isActive }) =>
             `flex items-center text-lg font-medium transition ${
-              isActive ? "text-green-400 font-bold" : "hover:text-yellow-400"
+              isActive ? "text-blue-800 font-bold" : "hover:text-black"
             }`
           }
         >
@@ -62,7 +62,7 @@ const Sidebar = () => {
           to="/ltaccepted"
           className={({ isActive }) =>
             `flex items-center text-lg font-medium transition ${
-              isActive ? "text-green-400 font-bold" : "hover:text-yellow-400"
+              isActive ? "text-blue-800 font-bold" : "hover:text-black"
             }`
           }
         >

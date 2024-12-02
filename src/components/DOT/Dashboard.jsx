@@ -8,10 +8,13 @@ const Dashboard = () => {
   const [pendingSpots, setPendingSpots] = useState([]);
   const [approvedSpots, setApprovedSpots] = useState([]);
   const [selectedImage, setSelectedImage] = useState('');
+  const [selectedId, setSelectedId] = useState('');
+  const [comment, setComment] = useState('');
 
 
   const handleViewClick = (spot) => {
     setSelectedImage(spot.image_link)
+    setSelectedId(spot.id)
     setIsModalOpen(true);
   };
 
@@ -42,14 +45,15 @@ const Dashboard = () => {
     }
   };
 
-  const accept = async (spot) => {
+  const accept = async () => {
     try {
       const { error } = await supabase
         .from("Spots")
         .update({
-        status : 'Approved'
+        status : 'Approved',
+        comment,
         })
-        .eq("id", spot.id);
+        .eq("id", selectedId);
       if (error) throw error;
 window.location.reload();
     } catch (error) {
@@ -58,14 +62,15 @@ window.location.reload();
     }
   };
 
-  const reject = async (spot) => {
+  const reject = async () => {
     try {
       const { error } = await supabase
         .from("Spots")
         .update({
-        status : 'Rejected'
+        status : 'Rejected',
+        comment,
         })
-        .eq("id", spot.id);
+        .eq("id", selectedId);
       if (error) throw error;
 window.location.reload();
     } catch (error) {
@@ -142,18 +147,7 @@ window.location.reload();
                               >
                                View
                               </button>
-                              <button
-                                className="btn btn-success btn-sm text-white"
-                                onClick={() => accept(spot)}
-                              >
-                                Accept
-                              </button>
-                              <button
-                                className="btn btn-error btn-sm text-white"
-                                onClick={() => reject(spot)}
-                              >
-                                Reject
-                              </button>
+                          
                             </div>
                               </td>
                             </tr>
@@ -228,20 +222,43 @@ window.location.reload();
       {isModalOpen && (
         <div className="modal modal-open font-mono">
           <div className="modal-box">
-            <h3 className="font-bold text-lg">Spot Image</h3>
+            <h3 className="font-bold text-lg"></h3>
             <img
               src={selectedImage}
               alt="Spot Image"
               className="w-full h-auto rounded-lg my-4"
             />
-            <div className="modal-action">
-              <button
-                className="btn btn-error text-white"
-                onClick={handleCloseModal}
-              >
-                Close
-              </button>
-            </div>
+             <input
+                type="text"
+                value={comment}
+                placeholder="Add Comment"
+                className="input input-bordered w-full"
+                onChange={(e) => setComment(e.target.value)}
+              />
+        <div className="modal-action flex justify-between items-center">
+          <button
+            className="btn bg-blue-500 text-white"
+            onClick={handleCloseModal}
+          >
+            Close
+          </button>
+
+          <div className="flex space-x-2">
+            <button
+              className="btn btn-error text-white"
+             onClick={reject}
+            >
+              Reject
+            </button>
+            <button
+              className="btn btn-success text-white"
+             onClick={accept}
+            >
+              Accept
+            </button>
+          </div>
+        </div>
+
           </div>
         </div>
       )}

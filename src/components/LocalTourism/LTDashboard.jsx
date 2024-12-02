@@ -1,12 +1,23 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import supabase from "../supabaseClient.jsx";
+import {
+  FaUsers,
+  FaPaperPlane,
+  FaCheckCircle,
+  FaTimesCircle,
+} from "react-icons/fa";
+import { MdOutlinePendingActions } from "react-icons/md";
+import { FaFileUpload } from "react-icons/fa";
 
 const LTDashboard = () => {
-  const id = sessionStorage.getItem("id"); // Ensure 'id' is retrieved
+  const id = sessionStorage.getItem("id"); 
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [spots, setSpotData] = useState([]);
+  const [total, setTotal] = useState('');
+  const [pending, setPending] = useState('');
+  const [approved, setApproved] = useState('');
 
   const fetch_data = async () => {
     try {
@@ -24,8 +35,34 @@ const LTDashboard = () => {
     }
   };
 
+  const stats = async () => {
+    try {
+      const { error, data } = await supabase
+        .from('Spots')
+        .select('*')
+        .eq('local_id', id);
+  
+      if (error) throw error;
+  
+      const totalLength = data.length;
+      const pendingCount = data.filter(item => item.status === 'Pending').length;
+      const approvedCount = data.filter(item => item.status === 'Approved').length;
+  
+      setTotal(totalLength);
+      setPending(pendingCount);
+      setApproved(approvedCount);
+  
+      return { totalLength, pendingCount, approvedCount };
+    } catch (error) {
+      alert('An unexpected error occurred.');
+      console.error('Error during fetching data:', error.message);
+    }
+  };
+  
+
   useEffect(() => {
     fetch_data();
+    stats();
   }, [id]); // Add id as a dependency to re-fetch if it changes
 
   return (
@@ -43,31 +80,45 @@ const LTDashboard = () => {
                 onChange={handleSearchChange}
               />
             </div> */}
-            <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 rounded-full">
-                  <img src="https://placehold.co/400" alt="Avatar" />
-                </div>
-              </label>
-              <ul
-                tabIndex={0}
-                className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
-              >
-                <li>
-                  <a>Profile</a>
-                </li>
-                <li>
-                  <a>Settings</a>
-                </li>
-                <li>
-                  <a>Logout</a>
-                </li>
-              </ul>
-            </div>
           </div>
         </header>
         <main className="flex-1 p-6 overflow-auto">
           <section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
+              {[
+                {
+                  title: "Total Spots Uploaded",
+                  count: total,
+                  icon: <FaFileUpload className="text-3xl" />,
+                  bgColor: "bg-orange-400",
+                },
+                {
+                  title: "Pending Spots",
+                  count:  pending,
+                  icon: <MdOutlinePendingActions className="text-3xl" />,
+                  bgColor: "bg-orange-400",
+                },
+                {
+                  title: "Approved Spots",
+                  count: approved,
+                  icon: <FaCheckCircle className="text-3xl" />,
+                  bgColor: "bg-orange-400",
+                },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className={`${item.bgColor} rounded-lg shadow-lg p-4 lg:p-6 text-white`}
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-2xl lg:text-4xl font-bold">
+                      {item.count}
+                    </h3>
+                    <span className="text-xl lg:text-2xl">{item.icon}</span>
+                  </div>
+                  <p className="text-xs lg:text-sm mt-2">{item.title}</p>
+                </div>
+              ))}
+            </div>
             <div className="flex justify-between">
               <h2 className="text-lg font-bold">Tourist Spots Posted</h2>
               {/* <div className="mb-4 flex items-center gap-4">

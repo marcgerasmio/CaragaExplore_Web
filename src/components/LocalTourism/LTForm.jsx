@@ -10,12 +10,14 @@ const LTForm = () => {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [amenities, setAmenities] = useState([]);
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-  const [contactSocialMedia, setContactSocialMedia] = useState("");
   const [photos, setPhotos] = useState([]);
   const [status, setStatus] = useState("Pending");
   const [file, setFile] = useState("");
+  const [image_1, setImage1] = useState([]);
+  const [image_2, setImage2] = useState([]);
+  const [image_3, setImage3] = useState([]);
+  const [image_4, setImage4] = useState([]);
+  const [image_5, setImage5] = useState([]);
   const navigate = useNavigate();
 
   const handleCheckboxChange = (e) => {
@@ -56,6 +58,8 @@ const LTForm = () => {
   };
 
 
+
+
   const handleSubmit = async () => {
     const { data, error } = await supabase
     .from('Spots')
@@ -66,9 +70,11 @@ const LTForm = () => {
       spot_location : location,
       description,
       amenities,
-      contactEmail,
-      contactPhone,
-      contactSocialMedia,
+      image_1,
+      image_2,
+      image_3,
+      image_4,
+      image_5,
       image_link : photos,
       status : 'Pending',
       local_id,
@@ -82,6 +88,142 @@ const LTForm = () => {
     navigate("/ltpending");
   }
   };
+
+  const uploadImage1 = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      try {
+        const filePath = `${selectedFile.name}`;
+        const { data, error } = await supabase.storage
+          .from("Images")
+          .upload(filePath, selectedFile);
+        if (error) {
+          throw error;
+        }
+        const { data: publicURL, error: urlError } = supabase.storage
+          .from("Images")
+          .getPublicUrl(filePath);
+        if (urlError) {
+          throw urlError;
+        }
+        console.log("Image URL:", publicURL.publicUrl);
+        setImage1(publicURL.publicUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error uploading image: " + error.message);
+      }
+    }
+  };
+
+  const uploadImage2 = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      try {
+        const filePath = `${selectedFile.name}`;
+        const { data, error } = await supabase.storage
+          .from("Images")
+          .upload(filePath, selectedFile);
+        if (error) {
+          throw error;
+        }
+        const { data: publicURL, error: urlError } = supabase.storage
+          .from("Images")
+          .getPublicUrl(filePath);
+        if (urlError) {
+          throw urlError;
+        }
+        console.log("Image URL:", publicURL.publicUrl);
+        setImage2(publicURL.publicUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error uploading image: " + error.message);
+      }
+    }
+  };
+
+  const uploadImage3 = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      try {
+        const filePath = `${selectedFile.name}`;
+        const { data, error } = await supabase.storage
+          .from("Images")
+          .upload(filePath, selectedFile);
+        if (error) {
+          throw error;
+        }
+        const { data: publicURL, error: urlError } = supabase.storage
+          .from("Images")
+          .getPublicUrl(filePath);
+        if (urlError) {
+          throw urlError;
+        }
+        console.log("Image URL:", publicURL.publicUrl);
+        setImage3(publicURL.publicUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error uploading image: " + error.message);
+      }
+    }
+  };
+
+  const uploadImage4 = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      try {
+        const filePath = `${selectedFile.name}`;
+        const { data, error } = await supabase.storage
+          .from("Images")
+          .upload(filePath, selectedFile);
+        if (error) {
+          throw error;
+        }
+        const { data: publicURL, error: urlError } = supabase.storage
+          .from("Images")
+          .getPublicUrl(filePath);
+        if (urlError) {
+          throw urlError;
+        }
+        console.log("Image URL:", publicURL.publicUrl);
+        setImage4(publicURL.publicUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error uploading image: " + error.message);
+      }
+    }
+  };
+
+  const uploadImage5 = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      try {
+        const filePath = `${selectedFile.name}`;
+        const { data, error } = await supabase.storage
+          .from("Images")
+          .upload(filePath, selectedFile);
+        if (error) {
+          throw error;
+        }
+        const { data: publicURL, error: urlError } = supabase.storage
+          .from("Images")
+          .getPublicUrl(filePath);
+        if (urlError) {
+          throw urlError;
+        }
+        console.log("Image URL:", publicURL.publicUrl);
+        setImage5(publicURL.publicUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error uploading image: " + error.message);
+      }
+    }
+  };
+
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-100 to-blue-100 font-mono">
@@ -163,6 +305,11 @@ const LTForm = () => {
                 "Hiking",
                 "Diving",
                 "Cultural Performances",
+                "Cottages",
+                "Rooms",
+                "Pool",
+                "Bamboo House",
+                "Bar",
               ].map((amenity) => (
                 <label key={amenity} className="flex items-center space-x-2">
                   <input
@@ -180,30 +327,39 @@ const LTForm = () => {
           {/* Contact Information Section */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-700">
-              Contact Information
+              Additional Images
             </h2>
             <div className="grid grid-cols-1 gap-4">
-              <input
-                type="email"
-                value={contactEmail}
-                placeholder="Email"
-                className="input input-bordered w-full"
-                onChange={(e) => setContactEmail(e.target.value)}
-              />
-              <input
-                type="text"
-                value={contactPhone}
-                placeholder="Phone Number"
-                className="input input-bordered w-full"
-                onChange={(e) => setContactPhone(e.target.value)}
-              />
-              <input
-                type="text"
-                value={contactSocialMedia}
-                placeholder="Social Media Link"
-                className="input input-bordered w-full"
-                onChange={(e) => setContactSocialMedia(e.target.value)}
-              />
+            <input
+              type="file"
+              multiple
+              className="file-input file-input-bordered w-full"
+              onChange={uploadImage1}
+            />
+               <input
+              type="file"
+              multiple
+              className="file-input file-input-bordered w-full"
+              onChange={uploadImage2}
+            />
+               <input
+              type="file"
+              multiple
+              className="file-input file-input-bordered w-full"
+              onChange={uploadImage3}
+            />
+               <input
+              type="file"
+              multiple
+              className="file-input file-input-bordered w-full"
+              onChange={uploadImage4}
+            />
+               <input
+              type="file"
+              multiple
+              className="file-input file-input-bordered w-full"
+              onChange={uploadImage5}
+            />
             </div>
           </div>
 

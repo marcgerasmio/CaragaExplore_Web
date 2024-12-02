@@ -55,7 +55,7 @@ const LTAccepted = () => {
                   <th>Spot Name</th>
                   <th>Address</th>
                   <th>Spot Category</th>
-                  <th>Remarks</th>
+                  <th>Comments</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -67,9 +67,7 @@ const LTAccepted = () => {
                     <td>{spot.spot_location}</td>
                     <td>{spot.spot_type}</td>
                     <td>
-                      <button className="btn btn-outline btn-success btn-sm">
-                        Approved
-                      </button>
+                     {spot.comment}
                     </td>
                     <td>
                       <button
